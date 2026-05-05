@@ -85,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                   /// 🖼️ LOGO
                   Image.asset(
-                    'assets/logo_ara.png',
+                    'assets/logo4.png',
                     width: 180,
                   ),
 

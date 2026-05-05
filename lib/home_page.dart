@@ -1,295 +1,503 @@
 import 'package:flutter/material.dart';
+import 'cart_page.dart';
+import 'favorit_page.dart';
+import 'menu_page.dart';
+import 'about_page.dart'; 
+import 'data.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  /// Fungsi untuk mendapatkan sapaan berdasarkan waktu
+  String _getGreeting() {
+    var hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 11) return "Hai.. Selamat Pagi";
+    if (hour >= 11 && hour < 15) return "Hai.. Selamat Siang";
+    if (hour >= 15 && hour < 18) return "Hai.. Selamat Sore";
+    return "Hai.. Selamat Malam";
+  }
+
+  void addToFavorite(BuildContext context, Map<String, String> item) {
+    favoriteItems.add(item);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Ditambahkan ke Favorit ❤️")),
+    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const FavoritPage()),
+    );
+  }
+
+  void addToCart(BuildContext context, Map<String, String> item) {
+    cartItems.add(item);
+
+    applyPromo(); // 🔥 WAJIB
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Ditambahkan ke Keranjang 🛒")),
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CartPage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E7),
 
-      /// 🔻 FLOATING BUTTON (Modern Rounded)
+      /// FLOAT BUTTON
       floatingActionButton: Container(
         margin: const EdgeInsets.only(bottom: 10),
         child: ElevatedButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const MenuPage()));
+          },
           icon: const Icon(Icons.explore_outlined, size: 20, color: Colors.white),
           label: const Text(
             "Explore Menu",
-            style: TextStyle(fontFamily: 'Serif', fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF321B16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
             padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-            elevation: 8,
+            elevation: 10,
           ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
 
-      /// 🔻 BOTTOM NAVIGATION BAR
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: const Color(0xFF321B16),
-        // FIX: Update opacity to withValues
-        unselectedItemColor: const Color(0xFF321B16).withValues(alpha: 0.4), 
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.cake_rounded), label: "Menu"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorit"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "About"),
-        ],
+      /// PREMIUM NAVBAR
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            )
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: 0,
+          selectedItemColor: const Color(0xFF321B16),
+          unselectedItemColor: Colors.brown.shade300,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          onTap: (index) {
+            if (index == 1) {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MenuPage()));
+            } else if (index == 2) {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FavoritPage()));
+            } else if (index == 3) {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AboutPage()));
+            }
+          },
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
+            BottomNavigationBarItem(icon: Icon(Icons.cake_rounded), label: "Menu"),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorit"),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "About"),
+          ],
+        ),
       ),
 
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// 1. HEADER DENGAN LOGO
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Image.asset('assets/logo_ara.png', height: 45), //
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF321B16)),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 25),
-
-              /// 2. WELCOME TEXT
-              const Text(
-                "Hey, Ara!",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.04,
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8,
+                ),
+                itemBuilder: (context, index) => const Icon(
+                  Icons.cake_outlined,
                   color: Color(0xFF321B16),
-                  fontFamily: 'Serif',
+                  size: 24,
                 ),
               ),
-              const Text(
-                "Craving something sweet today?",
-                style: TextStyle(fontSize: 16, color: Color(0xFF43281C), fontFamily: 'Serif'),
-              ),
+            ),
+          ),
 
-              const SizedBox(height: 20),
-
-              /// 3. INFO DISKON KREATIF
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF43281C), Color(0xFF2D1B17)],
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// HEADER
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Image.asset(
+                        'assets/logo4.png',
+                        height: 45,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.bakery_dining, size: 45),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CartPage())),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
+                          ),
+                          child: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF321B16)),
+                        ),
+                      ),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: const Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Flash Sale! ⚡",
-                            style: TextStyle(color: Color(0xFFF8E1E7), fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            "Buy 2 Croissants\nGet 1 Free Coffee",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Serif',
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            "*Hanya berlaku sampai jam 2 siang",
-                            style: TextStyle(color: Colors.white70, fontSize: 10),
-                          ),
+
+                  const SizedBox(height: 30),
+
+                 /// SAPAAN & USERNAME (Gaya seragam dengan tagline)
+                  Text(
+                    "${_getGreeting()}, $currentUserName",
+                    style: const TextStyle(
+                      fontSize: 24, 
+                      fontWeight: FontWeight.bold, 
+                      color: Color(0xFF321B16),
+                    ),
+                  ),
+
+                  const SizedBox(height: 4), // Jarak tipis agar tetap proporsional
+
+                  const Text(
+                    "Indulge in sweetness 🍓",
+                    style: TextStyle(
+                      fontSize: 17, 
+                      fontWeight: FontWeight.bold, 
+                      color: Color(0xFF321B16),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "A little happiness in every bite",
+                    style: TextStyle(
+                      fontSize: 14, 
+                      color: Color(0xFF6D4C41), // Warna dibuat sedikit lebih lembut
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// FLASH SALE (PREMIUM VERSION - WITH VALUES)
+                  GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CartPage())),
+                    child: Container(
+                      width: double.infinity,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF43281C), Color(0xFF2D1B17)],
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF321B16).withValues(alpha: 0.3), // Menggunakan withValues
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          )
                         ],
                       ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Stack(
+                          children: [
+                            /// DEKORASI BACKGROUND
+                            Positioned(
+                              top: -20,
+                              right: -20,
+                              child: CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Colors.white.withValues(alpha: 0.05),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: -30,
+                              left: 40,
+                              child: CircleAvatar(
+                                radius: 40,
+                                backgroundColor: Colors.white.withValues(alpha: 0.03),
+                              ),
+                            ),
+
+                            /// ISI KONTEN
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Text(
+                                            "Flash Sale ⚡",
+                                            style: TextStyle(
+                                              color: Colors.orange,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          "Buy 2 Croissants\nGet 1 Free Coffee",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            height: 1.2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  /// ICON DENGAN GLOW
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.orange.withValues(alpha: 0.3),
+                                          blurRadius: 20,
+                                          spreadRadius: 2,
+                                        )
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      Icons.local_fire_department,
+                                      color: Colors.orange,
+                                      size: 50,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    Icon(Icons.confirmation_num_outlined, color: Colors.white, size: 40),
-                  ],
-                ),
-              ),
+                  ),
 
-              const SizedBox(height: 25),
+                  const SizedBox(height: 25),
 
-              /// 4. KATEGORI
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _CategoryItem("Pastries", Icons.bakery_dining_outlined, true),
-                  _CategoryItem("Cakes", Icons.cake_outlined, false),
-                  _CategoryItem("Drinks", Icons.local_cafe_outlined, false),
-                  _CategoryItem("Desserts", Icons.icecream_outlined, false),
+                  /// CATEGORY
+                  Center(
+                    child: Wrap(
+                      spacing: 20,
+                      runSpacing: 20,
+                      children: const [
+                        _CategoryItem("Pastries", Icons.bakery_dining_outlined),
+                        _CategoryItem("Cakes", Icons.cake_outlined),
+                        _CategoryItem("Drinks", Icons.local_cafe_outlined),
+                        _CategoryItem("Desserts", Icons.icecream_outlined),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  const Text(
+                    "Recommended for You",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF321B16)),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  /// PRODUCT GRID
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      double width = constraints.maxWidth;
+                      double childAspectRatio = (width / 2) / 280;
+
+                      return GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: width > 600 ? 3 : 2,
+                        mainAxisSpacing: 20,
+                        crossAxisSpacing: 20,
+                        childAspectRatio: childAspectRatio,
+                        children: [
+                          _ProductCard("Strawberry Shortcake", "Rp 35.000", "assets/cake1.jpg",
+                              onFav: () => addToFavorite(context, {"name": "Strawberry Shortcake", "price": "Rp 35.000", "image": "assets/cake1.jpg"}),
+                              onCart: () => addToCart(context, {"name": "Strawberry Shortcake", "price": "Rp 35.000", "image": "assets/cake1.jpg"})),
+
+                          _ProductCard("Butter Croissant", "Rp 18.000", "assets/pastry1.jpg",
+                              onFav: () => addToFavorite(context, {"name": "Butter Croissant", "price": "Rp 18.000", "image": "assets/pastry1.jpg"}),
+                              onCart: () => addToCart(context, {"name": "Butter Croissant", "price": "Rp 18.000", "image": "assets/pastry1.jpg"})),
+
+                          _ProductCard("Chocolate Lava", "Rp 28.000", "assets/cake2.jpg",
+                              onFav: () => addToFavorite(context, {"name": "Chocolate Lava", "price": "Rp 28.000", "image": "assets/cake2.jpg"}),
+                              onCart: () => addToCart(context, {"name": "Chocolate Lava", "price": "Rp 28.000", "image": "assets/cake2.jpg"})),
+
+                          _ProductCard("Matcha Mille Crepe", "Rp 42.000", "assets/dessert1.jpg",
+                              onFav: () => addToFavorite(context, {"name": "Matcha Mille Crepe", "price": "Rp 42.000", "image": "assets/dessert1.jpg"}),
+                              onCart: () => addToCart(context, {"name": "Matcha Mille Crepe", "price": "Rp 42.000", "image": "assets/dessert1.jpg"})),
+
+                          _ProductCard("Caramel Macchiato", "Rp 25.000", "assets/drink1.jpg",
+                              onFav: () => addToFavorite(context, {"name": "Caramel Macchiato", "price": "Rp 25.000", "image": "assets/drink1.jpg"}),
+                              onCart: () => addToCart(context, {"name": "Caramel Macchiato", "price": "Rp 25.000", "image": "assets/drink1.jpg"})),
+
+                          _ProductCard("Red Velvet Cake", "Rp 22.000", "assets/cake3.jpg",
+                              onFav: () => addToFavorite(context, {"name": "Red Velvet Cake", "price": "Rp 22.000", "image": "assets/cake3.jpg"}),
+                              onCart: () => addToCart(context, {"name": "Red Velvet Cake", "price": "Rp 22.000", "image": "assets/cake3.jpg"})),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
-
-              const SizedBox(height: 30),
-
-              /// 5. RECOMMENDED SECTION
-              const Text(
-                "Recommended for You",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF321B16),
-                  fontFamily: 'Serif',
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              /// GRID PRODUK
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 20,
-                crossAxisSpacing: 20,
-                childAspectRatio: 0.72,
-                children: const [
-                  _ProductCard("Strawberry Shortcake", "Rp 35.000", "assets/dessert1.jpg"),
-                  _ProductCard("Butter Croissant", "Rp 18.000", "assets/dessert2.jpg"),
-                  _ProductCard("Chocolate Lava", "Rp 28.000", "assets/dessert3.jpg"),
-                  _ProductCard("Matcha Mille Crepe", "Rp 42.000", "assets/dessert4.jpg"),
-                  _ProductCard("Caramel Macchiato", "Rp 25.000", "assets/dessert5.jpg"),
-                  _ProductCard("Red Velvet Cupcake", "Rp 22.000", "assets/dessert6.jpg"),
-                ],
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-/// WIDGET KATEGORI
-class _CategoryItem extends StatelessWidget {
+/// CATEGORY ITEM
+class _CategoryItem extends StatefulWidget {
   final String label;
   final IconData icon;
-  final bool isActive;
-  const _CategoryItem(this.label, this.icon, this.isActive);
+  const _CategoryItem(this.label, this.icon);
+
+  @override
+  State<_CategoryItem> createState() => _CategoryItemState();
+}
+
+class _CategoryItemState extends State<_CategoryItem> {
+  bool isHover = false;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF321B16) : Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              // FIX: Update opacity to withValues
-              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
+    double scale = isHover ? 1.05 : 1.0; // Tentukan nilai scale
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => isHover = true),
+      onExit: (_) => setState(() => isHover = false),
+      child: GestureDetector(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MenuPage())),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          // Perbaikan: Pakai diagonal3Values (Baris 335)
+          transform: Matrix4.diagonal3Values(scale, scale, 1.0), 
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isHover ? 0.1 : 0.05),
+                      blurRadius: isHover ? 10 : 5,
+                    )
+                  ],
+                ),
+                child: Icon(widget.icon, color: const Color(0xFF321B16)),
+              ),
+              const SizedBox(height: 8),
+              Text(widget.label, style: const TextStyle(fontSize: 12)),
             ],
           ),
-          child: Icon(icon, color: isActive ? Colors.white : const Color(0xFF321B16)),
         ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-      ],
+      ),
     );
   }
 }
 
-/// WIDGET KARTU PRODUK
+/// PRODUCT CARD
 class _ProductCard extends StatelessWidget {
-  final String name;
-  final String price;
-  final String imagePath;
+  final String name, price, imagePath;
+  final VoidCallback onFav, onCart;
 
-  const _ProductCard(this.name, this.price, this.imagePath);
+  const _ProductCard(this.name, this.price, this.imagePath, {required this.onFav, required this.onCart});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          // FIX: Update opacity to withValues
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05), 
-            blurRadius: 15, 
-            offset: const Offset(0, 5)
-          )
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12)],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-                child: Container(
-                  height: 130,
-                  width: double.infinity,
-                  color: const Color(0xFFEDE7E3),
-                  child: Image.asset(imagePath, fit: BoxFit.cover, 
-                    errorBuilder: (context, error, stackTrace) => 
-                    const Icon(Icons.image, color: Colors.grey),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: CircleAvatar(
-                  radius: 15,
-                  // FIX: Update opacity to withValues
-                  backgroundColor: Colors.white.withValues(alpha: 0.9),
-                  child: const Icon(Icons.favorite_border, size: 18, color: Colors.redAccent),
-                ),
-              ),
-            ],
-          ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(25),
+        child: Stack(
+          children: [
+            Image.asset(imagePath, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
 
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Serif'),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.4)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                const SizedBox(height: 5),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+            ),
+
+            Positioned(
+              top: 10,
+              right: 10,
+              child: GestureDetector(
+                onTap: onFav,
+                child: const CircleAvatar(
+                  radius: 15,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.favorite_border, size: 18, color: Colors.red),
+                ),
+              ),
+            ),
+
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      price,
-                      style: const TextStyle(color: Color(0xFF43281C), fontWeight: FontWeight.w600, fontSize: 13),
-                    ),
-                    const Icon(Icons.add_circle, color: Color(0xFF321B16), size: 24),
+                    Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(price, style: const TextStyle(color: Colors.white70)),
+                        GestureDetector(
+                          onTap: onCart,
+                          child: const Icon(Icons.add_circle, color: Colors.white),
+                        )
+                      ],
+                    )
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

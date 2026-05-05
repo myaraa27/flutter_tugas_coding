@@ -19,7 +19,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # Cukup panggil nama foldernya saja untuk semua file di dalamnya
   assets:
-    - assets/g_login.jpg
-    - assets/g_sign.jpg
-    - assets/logo_ara.png
+    - assets/

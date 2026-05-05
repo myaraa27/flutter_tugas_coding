@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'data.dart'; // 🔥 WAJIB
 
-// --- WAVY CLIPPER CLASS (Digabung dalam satu file) ---
+// --- WAVY CLIPPER CLASS ---
 class WavyClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     var path = Path();
-    path.lineTo(0, size.height - 50);
+    path.lineTo(0, size.height - 60);
     var firstControlPoint = Offset(size.width / 4, size.height);
-    var firstEndPoint = Offset(size.width / 2, size.height - 30);
-    var secondControlPoint = Offset(size.width * 3 / 4, size.height - 80);
-    var secondEndPoint = Offset(size.width, size.height - 20);
+    var firstEndPoint = Offset(size.width / 2, size.height - 35);
+    var secondControlPoint = Offset(size.width * 3 / 4, size.height - 90);
+    var secondEndPoint = Offset(size.width, size.height - 25);
 
     path.quadraticBezierTo(firstControlPoint.dx, firstControlPoint.dy,
         firstEndPoint.dx, firstEndPoint.dy);
@@ -25,128 +26,305 @@ class WavyClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
-// --- SIGN UP PAGE CLASS ---
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
+
+  static String? registeredEmail;
+  static String? registeredPassword;
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController _userController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passController = TextEditingController();
+
+  // Mencegah memory leak (Best Practice & Menghilangkan Warning)
+  @override
+  void dispose() {
+    _userController.dispose();
+    _emailController.dispose();
+    _passController.dispose();
+    super.dispose();
+  }
+
+  // --- FUNGSI NOTIFIKASI MELAYANG (DIALOG) PREMIUM ---
+  void _showNotification(String title, String message, bool isSuccess) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6), // Latar belakang dim yang elegan
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D1B17),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: const Color(0xFFD7CCC8).withValues(alpha: 0.3), // Border tipis
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Ikon Notifikasi dalam Lingkaran Elegan
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSuccess 
+                        ? const Color(0xFFD7CCC8).withValues(alpha: 0.1)
+                        : Colors.redAccent.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: isSuccess ? const Color(0xFFD7CCC8) : Colors.redAccent,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(
+                    isSuccess ? Icons.auto_awesome_rounded : Icons.priority_high_rounded,
+                    color: isSuccess ? const Color(0xFFD7CCC8) : Colors.redAccent,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFFFDF9F3),
+                    fontFamily: 'Playfair Display',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFFD7CCC8).withValues(alpha: 0.8),
+                    fontFamily: 'Lora',
+                    fontSize: 14,
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                // Tombol OK Premium
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: const Color(0xFFD7CCC8).withValues(alpha: 0.1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFFD7CCC8), width: 0.5),
+                      ),
+                    ),
+                    child: const Text(
+                      "ACKNOWLEDGE",
+                      style: TextStyle(
+                        color: Color(0xFFD7CCC8),
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Montserrat',
+                        letterSpacing: 2,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final bool isMobile = size.width < 800;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E7), // Warna krim sesuai splash screen
+      backgroundColor: const Color(0xFFFDF9F3),
+      resizeToAvoidBottomInset: true, // Responsif saat keyboard muncul
       body: Stack(
         children: [
-          /// 🍰 BACKGROUND PATTERN
+          // Background Pattern Eksklusif
           Positioned.fill(
             child: Opacity(
-              opacity: 0.05,
+              opacity: 0.03,
               child: GridView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 8,
+                  crossAxisCount: 5, // Disesuaikan agar renggang elegan
                 ),
                 itemBuilder: (context, index) => const Icon(
-                  Icons.cake_outlined,
-                  color: Color(0xFF321B16), // Warna cokelat tua
-                  size: 24,
+                  Icons.bakery_dining_outlined,
+                  color: Color(0xFF2D1B17),
+                  size: 24, // Ikon diperkecil
                 ),
               ),
             ),
           ),
-
-          /// 🚀 MAIN CONTENT
+          
           Column(
             children: [
-              /// HEADER IMAGE DENGAN CLIPPER
+              // Header Image dengan Clipper dan Gradasi
               ClipPath(
                 clipper: WavyClipper(),
-                child: Image.asset(
-                  'assets/g_sign.jpg', // Sesuai pubspec.yaml kamu
-                  height: isMobile ? size.height * 0.25 : size.height * 0.35,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                child: Stack(
+                  children: [
+                    Image.asset(
+                      'assets/g_sign.jpg',
+                      height: size.height * 0.28,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: size.height * 0.28,
+                        color: const Color(0xFFD7CCC8),
+                      ),
+                    ),
+                    // Gradient overlay agar gambar menyatu mulus
+                    Container(
+                      height: size.height * 0.28,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.1),
+                            const Color(0xFF2D1B17).withValues(alpha: 0.6),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
+              
+              // Form Sign Up
               Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 25 : 50),
-                  alignment: Alignment.center,
-                  child: SingleChildScrollView(
-                    child: isMobile ? _buildMobileLayout() : _buildWebLayout(),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10),
+                      Text(
+                        "JOIN THE JOURNEY",
+                        style: TextStyle(
+                          fontSize: 11,
+                          letterSpacing: 8, // Tracking dilebarkan
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF8D6E63).withValues(alpha: 0.8),
+                          fontFamily: 'Montserrat',
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "Create Account",
+                        style: TextStyle(
+                          fontSize: 38,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF2D1B17),
+                          fontFamily: 'Playfair Display',
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "Daftar sekarang untuk mulai menikmati karya pastry spesial kami setiap harinya.",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: const Color(0xFF5D4037).withValues(alpha: 0.8),
+                          fontFamily: 'Lora',
+                          fontStyle: FontStyle.italic,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 35),
+                      
+                      // Form Card Premium
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(32),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D1B17),
+                          borderRadius: BorderRadius.circular(28),
+                          border: Border.all(
+                            color: const Color(0xFFD7CCC8).withValues(alpha: 0.15),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF2D1B17).withValues(alpha: 0.25),
+                              blurRadius: 40,
+                              offset: const Offset(0, 20),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            _buildPremiumField("Full Name", Icons.person_outline_rounded, _userController),
+                            const SizedBox(height: 20),
+                            _buildPremiumField("Email Address", Icons.alternate_email_rounded, _emailController),
+                            const SizedBox(height: 20),
+                            _buildPremiumField("Secure Password", Icons.lock_outline_rounded, _passController, isObscure: true),
+                            const SizedBox(height: 35),
+                            _buildSignUpButton(context),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  /// LAYOUT UNTUK HP
-  Widget _buildMobileLayout() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildTextContent(isMobile: true),
-        const SizedBox(height: 30),
-        _buildFormContainer(),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  /// LAYOUT UNTUK WEB / LAPTOP
-  Widget _buildWebLayout() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildFormContainer(),
-        const SizedBox(width: 80),
-        _buildTextContent(isMobile: false),
-      ],
-    );
-  }
-
-  /// BAGIAN JUDUL & TEKS
-  Widget _buildTextContent({required bool isMobile}) {
-    return SizedBox(
-      width: 380,
-      child: Column(
-        crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Le Sucré d'Ara", //
-            style: TextStyle(
-              fontSize: 16,
-              letterSpacing: 4,
-              color: const Color(0xFF43281C).withValues(alpha: 0.7), // FIX: withValues
-              fontFamily: 'Serif',
-            ),
-          ),
-          const SizedBox(height: 5),
-          const Text(
-            "Sign Up",
-            style: TextStyle(
-              fontSize: 42,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF321B16),
-              fontFamily: 'Serif',
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Text(
-            "Buat akun baru untuk menikmati kemudahan akses ke menu pastry spesial kami.",
-            textAlign: isMobile ? TextAlign.center : TextAlign.start,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Color(0xFF43281C),
-              fontFamily: 'Serif',
-              height: 1.6,
+          
+          // Back Button Premium
+          Positioned(
+            top: 50,
+            left: 24,
+            child: InkWell(
+              onTap: () => Navigator.pop(context),
+              borderRadius: BorderRadius.circular(50),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDF9F3).withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    )
+                  ],
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xFF2D1B17),
+                  size: 18,
+                ),
+              ),
             ),
           ),
         ],
@@ -154,60 +332,49 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  /// KOTAK FORM COKELAT
-  Widget _buildFormContainer() {
-    return Container(
-      width: 380,
-      padding: const EdgeInsets.all(35),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF43281C), Color(0xFF2D1B17)],
-        ),
-        borderRadius: BorderRadius.circular(50),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3), // FIX: withValues
-            blurRadius: 25,
-            offset: const Offset(0, 15),
-          )
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildField("Email", Icons.email_outlined),
-          const SizedBox(height: 15),
-          _buildField("User Name", Icons.person_outline),
-          const SizedBox(height: 15),
-          _buildField("Password", Icons.lock_outline, isObscure: true),
-          const SizedBox(height: 35),
-          _buildSignUpButton(),
-        ],
-      ),
-    );
-  }
+  // --- WIDGET PENDUKUNG ---
 
-  /// WIDGET INPUT FIELD
-  Widget _buildField(String label, IconData icon, {bool isObscure = false}) {
+  Widget _buildPremiumField(String label, IconData icon, TextEditingController controller, {bool isObscure = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                color: Color(0xFFBCA59C), fontSize: 13, fontFamily: 'Serif')),
-        const SizedBox(height: 8),
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(
+            color: Color(0xFFD7CCC8),
+            fontSize: 10,
+            letterSpacing: 2.5,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Montserrat',
+          ),
+        ),
+        const SizedBox(height: 12),
         TextField(
+          controller: controller,
           obscureText: isObscure,
-          style: const TextStyle(color: Colors.white),
+          cursorColor: const Color(0xFFD7CCC8),
+          style: const TextStyle(
+            color: Color(0xFFFDF9F3), 
+            fontFamily: 'Montserrat',
+            fontSize: 14,
+          ),
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: const Color(0xFFF8E1E7), size: 20),
+            prefixIcon: Icon(icon, color: const Color(0xFFD7CCC8).withValues(alpha: 0.7), size: 20),
             filled: true,
-            fillColor: Colors.black.withValues(alpha: 0.2), // FIX: withValues
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide.none,
+            fillColor: const Color(0xFFD7CCC8).withValues(alpha: 0.05),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: const Color(0xFFD7CCC8).withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: const Color(0xFFD7CCC8).withValues(alpha: 0.6), // Menyala tipis saat fokus
+                width: 1,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(vertical: 18),
           ),
@@ -216,22 +383,57 @@ class SignUpPage extends StatelessWidget {
     );
   }
 
-  /// TOMBOL DAFTAR
-  Widget _buildSignUpButton() {
-    return SizedBox(
+  Widget _buildSignUpButton(BuildContext context) {
+    return Container(
       width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFDF9F3).withValues(alpha: 0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () async {
+          if (_emailController.text.isNotEmpty && _passController.text.isNotEmpty && _userController.text.isNotEmpty) {
+            SignUpPage.registeredEmail = _emailController.text.trim();
+            SignUpPage.registeredPassword = _passController.text;
+            currentUserName = _userController.text.trim();
+
+            debugPrint("--- LOG SIGN UP ---");
+            debugPrint("Nama: ${_userController.text}");
+            debugPrint("Email Terdaftar: ${SignUpPage.registeredEmail}");
+
+            _showNotification("Bienvenue!", "Pendaftaran berhasil. Selamat bergabung di Le Sucré d’Ara.", true);
+            
+            // Jeda sebentar untuk membiarkan user membaca sebelum diarahkan kembali
+            await Future.delayed(const Duration(seconds: 2));
+            if (!context.mounted) return; 
+            
+            Navigator.pop(context); // Tutup dialog
+            Navigator.pop(context); // Kembali ke login
+          } else {
+            _showNotification("Incomplete Form", "Mohon lengkapi seluruh data pendaftaran Anda.", false);
+          }
+        },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF321B16),
+          backgroundColor: const Color(0xFFFDF9F3),
+          foregroundColor: const Color(0xFF2D1B17),
           padding: const EdgeInsets.symmetric(vertical: 20),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          elevation: 5,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
         ),
         child: const Text(
-          "Daftar",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: 'Serif'),
+          "REGISTER",
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            letterSpacing: 3,
+            fontSize: 13,
+            fontFamily: 'Montserrat',
+          ),
         ),
       ),
     );
